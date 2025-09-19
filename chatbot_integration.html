@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legal Assistant Chatbot</title>
+</head>
+<body>
+  <div id="chatContainer" style="border: 1px solid #ccc; padding: 10px; width: 300px; height: 400px; overflow-y: scroll;">
+    <div id="chatMessages"></div>
+  </div> <!-- مكان الشات بوت -->
+
+  <script>
+    // متغير API Key و URL الخاص بالـ Assistant
+    const API_URL = 'https://api.us-south.assistant.watson.cloud.ibm.com/instances/34741d2f-0ef1-4fc3-953f-7280ecbf59e7/v1/workspaces/xxxxxx/message';
+    const API_KEY = 'ioJeF5OZPX1friVJoQBUGAjgsUl3EqBEh9tBHIN3rqP4'; // API Key الخاص بك
+
+    // دالة لإرسال الرسالة إلى Watsonx Assistant API واستقبال الرد
+    async function sendMessageToAssistant(userMessage) {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${btoa('apikey:' + API_KEY)}`
+        },
+        body: JSON.stringify({
+          input: {
+            text: userMessage
+          }
+        })
+      });
+
+      const data = await response.json();
+      return data;
+    }
+
+    // عرض الرسالة في الواجهة
+    function displayMessage(message, sender) {
+      const chatMessages = document.getElementById('chatMessages');
+      const messageElement = document.createElement('p');
+      messageElement.innerText = `${sender}: ${message}`;
+      chatMessages.appendChild(messageElement);
+      chatMessages.scrollTop = chatMessages.scrollHeight; // يقوم بالتمرير لأسفل تلقائيًا عند إضافة رسالة جديدة
+    }
+
+    // إرسال واستقبال الرسائل
+    async function handleChat() {
+      const userMessage = prompt("Enter your legal question:");
+      if (userMessage) {
+        displayMessage(userMessage, "You");
+
+        const assistantResponse = await sendMessageToAssistant(userMessage);
+        displayMessage(assistantResponse.output.text[0], "Assistant");
+      }
+    }
+
+    // عندما يتم تحميل الصفحة، نعرض خيار للمستخدم للتفاعل مع الشات بوت
+    window.onload = function() {
+      const startButton = document.createElement('button');
+      startButton.innerText = 'Start Chat';
+      startButton.onclick = handleChat;
+      document.body.appendChild(startButton);
+    }
+  </script>
+</body>
+</html>
